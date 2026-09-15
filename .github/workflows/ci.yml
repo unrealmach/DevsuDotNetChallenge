@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore DevsuDotNetChallenge.sln
+
+      - name: Build
+        run: dotnet build DevsuDotNetChallenge.sln --no-restore -c Release
+
+      - name: Reglas de arquitectura
+        run: dotnet test tests/Identity.ArchitectureTests/Identity.ArchitectureTests.csproj --no-build -c Release --logger "console;verbosity=normal"

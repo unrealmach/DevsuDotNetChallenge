@@ -1,0 +1,114 @@
+name: devsu-challenge
+services:
+  identity-db:
+    image: postgres:16-alpine
+    container_name: devsu-identity-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${IDENTITY_DB_NAME:-identity}
+      POSTGRES_USER: ${IDENTITY_DB_USER:-devsu}
+      POSTGRES_PASSWORD: ${IDENTITY_DB_PASSWORD:-devsu}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${IDENTITY_DB_PORT:-5433}:5432"
+    volumes:
+      - identity-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${IDENTITY_DB_USER:-devsu} -d ${IDENTITY_DB_NAME:-identity}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  identity-api:
+    build:
+      context: .
+      dockerfile: src/Identity/Identity.Api/Dockerfile
+    container_name: devsu-identity-api
+    restart: unless-stopped
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_HTTP_PORTS: 8080
+      RunMigrationsOnStartup: "true"
+      ConnectionStrings__Identity: "Host=identity-db;Port=5432;Database=${IDENTITY_DB_NAME:-identity};Username=${IDENTITY_DB_USER:-devsu};Password=${IDENTITY_DB_PASSWORD:-devsu}"
+      Jwt__Issuer: devsu-identity
+      Jwt__Audience: devsu-clients
+      Jwt__Key: ${JWT_KEY:-CAMBIA-ESTA-CLAVE-EN-PRODUCCION-MINIMO-32-CHARS}
+      Jwt__AccessTokenMinutes: "30"
+      Jwt__RefreshTokenDays: "7"
+    ports:
+      - "${IDENTITY_API_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: devsu-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # SEGUNDO MICROSERVICIO (Accounts) - descomenta cuando lo crees
+  # ---------------------------------------------------------------------------
+  # accounts-db:
+  #   image: postgres:16-alpine
+  #   container_name: devsu-accounts-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: ${ACCOUNTS_DB_NAME:-accounts}
+  #     POSTGRES_USER: ${ACCOUNTS_DB_USER:-devsu}
+  #     POSTGRES_PASSWORD: ${ACCOUNTS_DB_PASSWORD:-devsu}
+  #     PGDATA: /var/lib/postgresql/data/pgdata
+  #   ports:
+  #     - "${ACCOUNTS_DB_PORT:-5434}:5432"
+  #   volumes:
+  #     - accounts-db-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${ACCOUNTS_DB_USER:-devsu} -d ${ACCOUNTS_DB_NAME:-accounts}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 10s
+  #
+  # accounts-api:
+  #   build:
+  #     context: .
+  #     dockerfile: src/Accounts/Accounts.Api/Dockerfile
+  #   container_name: devsu-accounts-api
+  #   restart: unless-stopped
+  #   depends_on:
+  #     accounts-db:
+  #       condition: service_healthy
+  #   environment:
+  #     ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+  #     ASPNETCORE_HTTP_PORTS: 8080
+  #     RunMigrationsOnStartup: "true"
+  #     ConnectionStrings__Accounts: "Host=accounts-db;Port=5432;Database=${ACCOUNTS_DB_NAME:-accounts};Username=${ACCOUNTS_DB_USER:-devsu};Password=${ACCOUNTS_DB_PASSWORD:-devsu}"
+  #     # Mismos valores que Identity: asi Accounts puede validar los JWT que emite Identity.
+  #     Jwt__Issuer: devsu-identity
+  #     Jwt__Audience: devsu-clients
+  #     Jwt__Key: ${JWT_KEY:-CAMBIA-ESTA-CLAVE-EN-PRODUCCION-MINIMO-32-CHARS}
+  #   ports:
+  #     - "${ACCOUNTS_API_PORT:-8082}:8080"
+
+volumes:
+  identity-db-data:
+  redis-data:
+  # accounts-db-data:
