@@ -29,11 +29,20 @@ services:
     depends_on:
       identity-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_HTTP_PORTS: 8080
       RunMigrationsOnStartup: "true"
       ConnectionStrings__Identity: "Host=identity-db;Port=5432;Database=${IDENTITY_DB_NAME:-identity};Username=${IDENTITY_DB_USER:-devsu};Password=${IDENTITY_DB_PASSWORD:-devsu}"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__VirtualHost: /
+      RabbitMq__Username: ${RABBITMQ_USER:-devsu}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-devsu}
+      OpenTelemetry__OtlpEndpoint: "http://aspire-dashboard:18889"
       Jwt__Issuer: devsu-identity
       Jwt__Audience: devsu-clients
       Jwt__Key: ${JWT_KEY:-CAMBIA-ESTA-CLAVE-EN-PRODUCCION-MINIMO-32-CHARS}
@@ -64,8 +73,38 @@ services:
       retries: 5
       start_period: 5s
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: devsu-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-devsu}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-devsu}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:8.1
+    container_name: devsu-aspire-dashboard
+    restart: unless-stopped
+    environment:
+      DASHBOARD__OTLP__AUTHMODE: Unsecured
+      DASHBOARD__FRONTEND__AUTHMODE: Unsecured
+    ports:
+      - "${ASPIRE_DASHBOARD_PORT:-18888}:18888"
+      - "${ASPIRE_DASHBOARD_OTLP_PORT:-18889}:18889"
+
   # ---------------------------------------------------------------------------
-  # SEGUNDO MICROSERVICIO (Accounts) - descomenta cuando lo crees
+  # SEGUNDO MICROSERVICIO (Accounts) 
   # ---------------------------------------------------------------------------
   # accounts-db:
   #   image: postgres:16-alpine
@@ -111,4 +150,5 @@ services:
 volumes:
   identity-db-data:
   redis-data:
+  rabbitmq-data:
   # accounts-db-data:

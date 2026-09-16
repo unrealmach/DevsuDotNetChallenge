@@ -71,10 +71,14 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks();
 
+builder.Services.AddIdentityObservability(builder.Configuration);
+builder.Logging.AddIdentityObservability(builder.Configuration);
+
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(
     builder.Configuration.GetConnectionString("Identity")
-    ?? throw new InvalidOperationException("Falta la cadena de conexion 'Identity'."));
+    ?? throw new InvalidOperationException("Falta la cadena de conexion 'Identity'."),
+    builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
