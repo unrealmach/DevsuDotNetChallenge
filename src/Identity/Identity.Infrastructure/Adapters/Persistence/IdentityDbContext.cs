@@ -14,6 +14,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    
+    public DbSet<Person> Persons => Set<Person>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -41,6 +43,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         }
     }
 
+    // escanea todos los assembly de tpo identityDbContext que implementen IEntityConfiguration<T>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
