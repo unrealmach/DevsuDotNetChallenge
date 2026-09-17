@@ -6,7 +6,7 @@ using Identity.Domain.Errors;
 
 namespace Identity.Application.Mediator.Behaviors;
 
-internal sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
+internal sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators) //constructor con todos los validators registrados para command/query
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
@@ -17,35 +17,35 @@ internal sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValid
     {
         if (!validators.Any())
         {
-            return await next();
+            return await next(); // pasa a unit of work
         }
 
         var failures = new List<string>();
 
-        foreach (var validator in validators)
+        foreach (var validator in validators) //itera sobre la lista de validadores
         {
-            var result = await validator.ValidateAsync(request, ct);
-            failures.AddRange(result.Errors.Select(failure => $"{failure.PropertyName}: {failure.ErrorMessage}"));
+            var result = await validator.ValidateAsync(request, ct); //ejecuta 
+            failures.AddRange(result.Errors.Select(failure => $"{failure.PropertyName}: {failure.ErrorMessage}")); //junta en lista
         }
 
         if (failures.Count == 0)
         {
-            return await next();
+            return await next(); // pasa a unit of work
         }
 
         var error = Error.From(ErrorCatalog.RequestValidationFailed, string.Join(" | ", failures));
 
-        return CreateFailureResponse(error);
+        return CreateFailureResponse(error); //crea una respuesta tipo failure
     }
 
     private static TResponse CreateFailureResponse(Error error)
     {
-        if (typeof(TResponse) == typeof(Result))
+        if (typeof(TResponse) == typeof(Result)) // si es un result sin generico proveniente del handler
         {
-            return (TResponse)(object)Result.Failure(error);
+            return (TResponse)(object)Result.Failure(error); //crea un result con error
         }
 
-        var valueType = typeof(TResponse).GetGenericArguments()[0];
+        var valueType = typeof(TResponse).GetGenericArguments()[0]; // al ser un result la obtiene y la devuelve
         var failureMethod = typeof(Result)
             .GetMethod(nameof(Result.Failure), 1, BindingFlags.Public | BindingFlags.Static, null, [typeof(Error)], null)!
             .MakeGenericMethod(valueType);

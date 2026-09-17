@@ -16,6 +16,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<Client> Clients => Set<Client>();
 
+    // gestiona el save del unit of work
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try

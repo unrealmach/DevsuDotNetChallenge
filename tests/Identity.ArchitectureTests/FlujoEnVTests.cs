@@ -95,7 +95,7 @@ public class FlujoEnVTests
                 Layers.Ports,
                 Layers.Services,
                 Layers.Infrastructure,
-                "Identity.Application.Commands.CreatePerson.CreatePersonCommandHandler",
+                "Identity.Application.Commands.CreateClient.CreateClientCommandHandler",
                 "Microsoft.EntityFrameworkCore")
             .GetResult();
 

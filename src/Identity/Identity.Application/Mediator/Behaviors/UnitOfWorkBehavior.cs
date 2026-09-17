@@ -8,7 +8,7 @@ internal sealed class UnitOfWorkBehavior<TRequest, TResponse>(IUnitOfWork unitOf
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private static readonly bool IsCommand =
+    private static readonly bool IsCommand = // TRequest es un ICommand (escribe o lee) 
         typeof(ICommand).IsAssignableFrom(typeof(TRequest))
         || Array.Exists(
             typeof(TRequest).GetInterfaces(),
@@ -19,11 +19,11 @@ internal sealed class UnitOfWorkBehavior<TRequest, TResponse>(IUnitOfWork unitOf
         RequestHandlerDelegate<TResponse> next,
         CancellationToken ct)
     {
-        var response = await next();
+        var response = await next(); //llama al handler
 
-        if (IsCommand && response is Result { IsSuccess: true })
+        if (IsCommand && response is Result { IsSuccess: true }) // si es un Trequest Writer y comand es exitoso
         {
-            await unitOfWork.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct); //guarda
         }
 
         return response;

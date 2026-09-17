@@ -6,14 +6,23 @@ public static class ErrorCatalog
 {
     public const string GenericResponseMessage = "Ocurrio un error procesando la solicitud. Contacta a soporte con el traceId.";
 
-    public static readonly ErrorDefinition PersonNotFound = new(
+    public static readonly ErrorDefinition ClientIdAlreadyRegistered = new(
         "IDN-APP-006",
         ErrorLayer.Application,
         ErrorSeverity.Warning,
         ErrorExposure.Response,
+        409,
+        "Intento de ingreso de cliente con un clientId ya existente",
+        "Ya existe un cliente registrado con ese clientId.");
+
+    public static readonly ErrorDefinition ClientNotFound = new(
+        "IDN-APP-007",
+        ErrorLayer.Application,
+        ErrorSeverity.Warning,
+        ErrorExposure.Response,
         404,
-        "La persona solicitada no existe",
-        "Persona no encontrada.");
+        "El cliente solicitado no existe",
+        "Cliente no encontrado.");
 
     public static readonly ErrorDefinition UseCaseFailure = new(
         "IDN-APP-999",
