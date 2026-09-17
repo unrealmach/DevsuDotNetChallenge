@@ -12,10 +12,9 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 {
     public const string Schema = "identity";
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-    
     public DbSet<Person> Persons => Set<Person>();
+
+    public DbSet<Client> Clients => Set<Client>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

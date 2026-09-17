@@ -1,11 +1,9 @@
 using Identity.Application.Ports.Output.Read;
-using Identity.Application.Ports.Output.Security;
 using Identity.Application.Ports.Output.Write;
 using Identity.Infrastructure.Adapters.Messaging;
 using Identity.Infrastructure.Adapters.Persistence;
 using Identity.Infrastructure.Adapters.Persistence.Read;
 using Identity.Infrastructure.Adapters.Persistence.Write;
-using Identity.Infrastructure.Adapters.Security;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,14 +24,15 @@ public static class DependencyInjection
                 connectionString,
                 npgsql => npgsql.MigrationsHistoryTable("__ef_migrations", IdentityDbContext.Schema)));
 
+        var readConnectionString = configuration.GetConnectionString("IdentityReadOnly") ?? connectionString;
+
+        services.AddDbContext<IdentityReadOnlyDbContext>(options =>
+            options.UseNpgsql(readConnectionString)
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IdentityDbContext>());
-        services.AddScoped<IUserRepository, UserRepositoryAdapter>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepositoryAdapter>();
-
-        services.AddScoped<IUserReadRepository, UserReadRepositoryAdapter>();
-
-        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasherAdapter>();
-        services.AddSingleton<ITokenGenerator, JwtTokenGeneratorAdapter>();
+        services.AddScoped<IPersonReadRepository, PersonReadRepositoryAdapter>();
+        services.AddScoped<IPersonWriteRepository, PersonWriteRepositoryAdapter>();
 
         services.AddOptions<RabbitMqOptions>()
             .Bind(configuration.GetSection(RabbitMqOptions.SectionName))

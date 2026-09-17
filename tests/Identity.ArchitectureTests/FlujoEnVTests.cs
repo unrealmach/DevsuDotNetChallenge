@@ -6,10 +6,13 @@ namespace Identity.ArchitectureTests;
 public class FlujoEnVTests
 {
     [Fact]
-    public void El_dominio_no_depende_de_ninguna_otra_capa_ni_de_tecnologia()
+    public void Domain_ShouldNotDependOnAnyOtherLayerOrTechnology()
     {
-        Types.InAssembly(Layers.DomainAssembly)
-            .Should()
+        // Arrange
+        var dominio = Types.InAssembly(Layers.DomainAssembly);
+
+        // Act
+        var result = dominio.Should()
             .NotHaveDependencyOnAny(
                 Layers.Application,
                 Layers.Infrastructure,
@@ -17,104 +20,138 @@ public class FlujoEnVTests
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.AspNetCore",
                 "Npgsql")
-            .GetResult()
-            .Cumple("El centro del hexagono no conoce a nadie: ni capas externas ni frameworks.");
+            .GetResult();
+
+        // Assert
+        result.Cumple("El centro del hexagono no conoce a nadie: ni capas externas ni frameworks.");
     }
 
     [Fact]
-    public void La_aplicacion_no_conoce_la_infraestructura_ni_el_api()
+    public void Application_ShouldNotKnowInfrastructureOrApi()
     {
-        Types.InAssembly(Layers.ApplicationAssembly)
-            .Should()
+        // Arrange
+        var aplicacion = Types.InAssembly(Layers.ApplicationAssembly);
+
+        // Act
+        var result = aplicacion.Should()
             .NotHaveDependencyOnAny(Layers.Infrastructure, Layers.Api)
-            .GetResult()
-            .Cumple("El nucleo define puertos; jamas conoce a quien los implementa.");
+            .GetResult();
+
+        // Assert
+        result.Cumple("El nucleo define puertos; jamas conoce a quien los implementa.");
     }
 
     [Fact]
-    public void La_aplicacion_no_conoce_EFCore_Npgsql_ni_AspNetCore()
+    public void Application_ShouldNotKnowEfCoreNpgsqlOrAspNetCore()
     {
-        Types.InAssembly(Layers.ApplicationAssembly)
-            .Should()
+        // Arrange
+        var aplicacion = Types.InAssembly(Layers.ApplicationAssembly);
+
+        // Act
+        var result = aplicacion.Should()
             .NotHaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Npgsql", "Microsoft.AspNetCore")
-            .GetResult()
-            .Cumple("El nucleo no puede atarse a una tecnologia de persistencia ni de transporte.");
+            .GetResult();
+
+        // Assert
+        result.Cumple("El nucleo no puede atarse a una tecnologia de persistencia ni de transporte.");
     }
 
     [Fact]
-    public void La_infraestructura_no_conoce_el_api()
+    public void Infrastructure_ShouldNotKnowApi()
     {
-        Types.InAssembly(Layers.InfrastructureAssembly)
-            .Should()
-            .NotHaveDependencyOn(Layers.Api)
-            .GetResult()
-            .Cumple("Los adaptadores de salida no saben que existe HTTP.");
+        // Arrange
+        var infraestructura = Types.InAssembly(Layers.InfrastructureAssembly);
+
+        // Act
+        var result = infraestructura.Should().NotHaveDependencyOn(Layers.Api).GetResult();
+
+        // Assert
+        result.Cumple("Los adaptadores de salida no saben que existe HTTP.");
     }
 
     [Fact]
-    public void El_api_no_alcanza_los_puertos_ni_los_servicios()
+    public void Api_ShouldNotReachPortsOrServices()
     {
-        Types.InAssembly(Layers.ApiAssembly)
-            .Should()
-            .NotHaveDependencyOnAny(Layers.Ports, Layers.Services)
-            .GetResult()
-            .Cumple("El adaptador de entrada entra por el mediator; no baja dos escalones de golpe.");
+        // Arrange
+        var api = Types.InAssembly(Layers.ApiAssembly);
+
+        // Act
+        var result = api.Should().NotHaveDependencyOnAny(Layers.Ports, Layers.Services).GetResult();
+
+        // Assert
+        result.Cumple("El adaptador de entrada entra por el mediator; no baja dos escalones de golpe.");
     }
 
     [Fact]
-    public void Los_controllers_solo_hablan_con_el_mediator()
+    public void Controllers_ShouldOnlyTalkToTheMediator()
     {
-        Types.InAssembly(Layers.ApiAssembly)
-            .That().ResideInNamespace(Layers.Controllers)
-            .Should()
+        // Arrange
+        var controllers = Types.InAssembly(Layers.ApiAssembly)
+            .That().ResideInNamespace(Layers.Controllers);
+
+        // Act
+        var result = controllers.Should()
             .NotHaveDependencyOnAny(
                 Layers.Ports,
                 Layers.Services,
                 Layers.Infrastructure,
-                "Identity.Application.Commands.RegisterUser.RegisterUserCommandHandler",
+                "Identity.Application.Commands.CreatePerson.CreatePersonCommandHandler",
                 "Microsoft.EntityFrameworkCore")
-            .GetResult()
-            .Cumple("Un controller arma el mensaje y lo entrega; no orquesta ni persiste.");
+            .GetResult();
+
+        // Assert
+        result.Cumple("Un controller arma el mensaje y lo entrega; no orquesta ni persiste.");
     }
 
     [Fact]
-    public void Los_handlers_orquestan_servicios_y_nunca_tocan_un_puerto()
+    public void Handlers_ShouldOrchestrateServicesAndNeverTouchAPort()
     {
-        var infractores = Types.InAssembly(Layers.ApplicationAssembly)
+        // Arrange
+        var handlers = Types.InAssembly(Layers.ApplicationAssembly)
             .That().HaveNameEndingWith("Handler")
-            .And().HaveDependencyOn(Layers.Ports)
-            .GetTypes();
+            .And().HaveDependencyOn(Layers.Ports);
 
+        // Act
+        var infractores = handlers.GetTypes();
+
+        // Assert
         Layers.NoHayInfractores(
             infractores,
             "El handler baja por los servicios; el puerto lo toca el servicio, no el.");
     }
 
     [Fact]
-    public void Solo_los_servicios_y_el_pipeline_tocan_los_puertos()
+    public void OnlyServicesAndThePipeline_ShouldTouchPorts()
     {
-        var infractores = Types.InAssembly(Layers.ApplicationAssembly)
+        // Arrange
+        var consumidoresDePuertos = Types.InAssembly(Layers.ApplicationAssembly)
             .That().HaveDependencyOn(Layers.Ports)
             .And().DoNotResideInNamespace(Layers.Services)
             .And().DoNotResideInNamespace(Layers.Behaviors)
             .And().DoNotResideInNamespace(Layers.Ports)
-            .And().DoNotHaveName("DependencyInjection")
-            .GetTypes();
+            .And().DoNotHaveName("DependencyInjection");
 
+        // Act
+        var infractores = consumidoresDePuertos.GetTypes();
+
+        // Assert
         Layers.NoHayInfractores(
             infractores,
             "Los puertos tienen un unico consumidor: la capa de servicios (y el behavior que cierra la transaccion).");
     }
 
     [Fact]
-    public void Solo_el_composition_root_conoce_la_infraestructura()
+    public void OnlyTheCompositionRoot_ShouldKnowInfrastructure()
     {
-        var infractores = Types.InAssembly(Layers.ApiAssembly)
+        // Arrange
+        var dependenDeInfraestructura = Types.InAssembly(Layers.ApiAssembly)
             .That().HaveDependencyOn(Layers.Infrastructure)
-            .And().DoNotHaveName("Program")
-            .And().DoNotHaveName("JwtAuthenticationExtensions")
-            .GetTypes();
+            .And().DoNotHaveName("Program");
 
+        // Act
+        var infractores = dependenDeInfraestructura.GetTypes();
+
+        // Assert
         Layers.NoHayInfractores(
             infractores,
             "Solo el arranque enchufa adaptadores; el resto del Api ignora que existe Postgres.");

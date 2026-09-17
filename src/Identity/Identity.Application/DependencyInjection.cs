@@ -1,12 +1,13 @@
+using FluentValidation;
 using Identity.Application.Abstractions.Messaging;
-using Identity.Application.Commands.AuthenticateUser;
-using Identity.Application.Commands.RefreshSession;
-using Identity.Application.Commands.RegisterUser;
-using Identity.Application.Commands.RevokeSessions;
+using Identity.Application.Commands.CreatePerson;
+using Identity.Application.Commands.DeletePerson;
+using Identity.Application.Commands.UpdatePerson;
 using Identity.Application.Common;
 using Identity.Application.Dtos;
 using Identity.Application.Mediator.Behaviors;
-using Identity.Application.Queries.GetUserProfile;
+using Identity.Application.Queries.GetPersonById;
+using Identity.Application.Queries.GetPersons;
 using Identity.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,23 +19,32 @@ public static class DependencyInjection
     {
         services.AddScoped<IMediator, Mediator.Mediator>();
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ISessionService, SessionService>();
-        services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<IPersonReadService, PersonReadService>();
+        services.AddScoped<IPersonValidationService, PersonValidationService>();
+        services.AddScoped<IPersonWriteService, PersonWriteService>();
 
+        //registro explicito de validators
         services
-            .AddScoped<IRequestHandler<RegisterUserCommand, Result<AuthenticationResult>>,
-                RegisterUserCommandHandler>()
-            .AddScoped<IRequestHandler<AuthenticateUserCommand, Result<AuthenticationResult>>,
-                AuthenticateUserCommandHandler>()
-            .AddScoped<IRequestHandler<RefreshSessionCommand, Result<AuthenticationResult>>,
-                RefreshSessionCommandHandler>()
-            .AddScoped<IRequestHandler<RevokeSessionsCommand, Result>,
-                RevokeSessionsCommandHandler>()
-            .AddScoped<IRequestHandler<GetUserProfileQuery, Result<UserProfile>>,
-                GetUserProfileQueryHandler>();
+            .AddScoped<IValidator<CreatePersonCommand>, CreatePersonCommandValidator>()
+            .AddScoped<IValidator<UpdatePersonCommand>, UpdatePersonCommandValidator>()
+            .AddScoped<IValidator<DeletePersonCommand>, DeletePersonCommandValidator>()
+            .AddScoped<IValidator<GetPersonByIdQuery>, GetPersonByIdQueryValidator>();
+        
+        //registro explicito de handlers
+        services
+            .AddScoped<IRequestHandler<CreatePersonCommand, Result<PersonDto>>,
+                CreatePersonCommandHandler>()
+            .AddScoped<IRequestHandler<UpdatePersonCommand, Result<PersonDto>>,
+                UpdatePersonCommandHandler>()
+            .AddScoped<IRequestHandler<DeletePersonCommand, Result>,
+                DeletePersonCommandHandler>()
+            .AddScoped<IRequestHandler<GetPersonByIdQuery, Result<PersonDto>>,
+                GetPersonByIdQueryHandler>()
+            .AddScoped<IRequestHandler<GetPersonsQuery, Result<IReadOnlyList<PersonDto>>>,
+                GetPersonsQueryHandler>();
 
         return services;
     }

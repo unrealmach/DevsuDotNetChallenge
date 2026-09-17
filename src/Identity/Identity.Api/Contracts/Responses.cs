@@ -2,18 +2,25 @@ using Identity.Application.Dtos;
 
 namespace Identity.Api.Contracts;
 
-public sealed record UserResponse(Guid Id, string Email, string FullName, string Role, DateTime CreatedAtUtc)
+public sealed record PersonResponse(
+    Guid Id,
+    string Name,
+    string Gender,
+    string Age,
+    string Identification,
+    string Address,
+    string Phone,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc)
 {
-    public static UserResponse From(UserProfile profile) =>
-        new(profile.Id, profile.Email, profile.FullName, profile.Role, profile.CreatedAtUtc);
-}
-
-public sealed record AuthResponse(
-    string AccessToken,
-    DateTime ExpiresAtUtc,
-    string RefreshToken,
-    UserResponse User)
-{
-    public static AuthResponse From(AuthenticationResult result) =>
-        new(result.AccessToken, result.ExpiresAtUtc, result.RefreshToken, UserResponse.From(result.User));
+    public static PersonResponse From(PersonDto person) => new(
+        person.Id,
+        person.Name,
+        person.Gender,
+        person.Age,
+        person.Identification,
+        person.Address,
+        person.Phone,
+        person.CreatedAtUtc,
+        person.UpdatedAtUtc);
 }

@@ -42,28 +42,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Devsu Identity API",
         Version = "v1",
-        Description = "Microservicio de autenticacion y gestion de usuarios (arquitectura hexagonal)."
-    });
-
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Pega aqui el access token (sin el prefijo 'Bearer')."
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
+        Description = "Microservicio de gestion de personas (arquitectura hexagonal)."
     });
 });
 
@@ -79,7 +58,6 @@ builder.Services.AddIdentityInfrastructure(
     builder.Configuration.GetConnectionString("Identity")
     ?? throw new InvalidOperationException("Falta la cadena de conexion 'Identity'."),
     builder.Configuration);
-builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -110,9 +88,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Identity API v1"));
 }
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health").AllowAnonymous();

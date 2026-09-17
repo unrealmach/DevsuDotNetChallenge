@@ -16,10 +16,10 @@ public static class Layers
     public const string Behaviors = "Identity.Application.Mediator.Behaviors";
     public const string Controllers = "Identity.Api.Controllers";
 
-    public static readonly Assembly DomainAssembly = typeof(Identity.Domain.Entities.User).Assembly;
+    public static readonly Assembly DomainAssembly = typeof(Identity.Domain.Entities.Person).Assembly;
     public static readonly Assembly ApplicationAssembly = typeof(Identity.Application.DependencyInjection).Assembly;
     public static readonly Assembly InfrastructureAssembly = typeof(Identity.Infrastructure.DependencyInjection).Assembly;
-    public static readonly Assembly ApiAssembly = typeof(Identity.Api.Controllers.AuthController).Assembly;
+    public static readonly Assembly ApiAssembly = typeof(Identity.Api.Controllers.PersonsController).Assembly;
 
     public static void Cumple(this TestResult result, string regla)
     {

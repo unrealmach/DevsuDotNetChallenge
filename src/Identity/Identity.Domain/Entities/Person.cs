@@ -2,9 +2,9 @@ using Identity.Domain.Common;
 
 namespace Identity.Domain.Entities;
 
-public sealed class Person : AuditableEntity
+public class Person : AuditableEntity
 {
-    private Person()
+    protected Person()
     {
         Id = Guid.NewGuid();
     }
@@ -52,6 +52,12 @@ public sealed class Person : AuditableEntity
     public Person WithPhone(string phone)
     {
         Phone = phone;
+        return this;
+    }
+
+    public Person Touch()
+    {
+        MarkAsUpdated();
         return this;
     }
 }

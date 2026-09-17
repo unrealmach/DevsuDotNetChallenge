@@ -6,101 +6,14 @@ public static class ErrorCatalog
 {
     public const string GenericResponseMessage = "Ocurrio un error procesando la solicitud. Contacta a soporte con el traceId.";
 
-    public static readonly ErrorDefinition UserInvalidEmail = new(
-        "IDN-DOM-001",
-        ErrorLayer.Domain,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        400,
-        "El correo no cumple el formato exigido por el dominio",
-        "El correo electronico no tiene un formato valido.");
-
-    public static readonly ErrorDefinition UserInvalidName = new(
-        "IDN-DOM-002",
-        ErrorLayer.Domain,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        400,
-        "El nombre del usuario esta vacio",
-        "El nombre del usuario es obligatorio.");
-
-    public static readonly ErrorDefinition UserInvalidRole = new(
-        "IDN-DOM-003",
-        ErrorLayer.Domain,
-        ErrorSeverity.Error,
-        ErrorExposure.LogOnly,
-        500,
-        "Se intento crear un usuario con un rol no soportado");
-
-    public static readonly ErrorDefinition UserEmptyPasswordHash = new(
-        "IDN-DOM-004",
-        ErrorLayer.Domain,
-        ErrorSeverity.Error,
-        ErrorExposure.LogOnly,
-        500,
-        "Se intento crear un usuario sin hash de password");
-
-    public static readonly ErrorDefinition RefreshTokenInvalidExpiration = new(
-        "IDN-DOM-005",
-        ErrorLayer.Domain,
-        ErrorSeverity.Error,
-        ErrorExposure.LogOnly,
-        500,
-        "Se intento emitir un refresh token con expiracion en el pasado");
-
-    public static readonly ErrorDefinition RefreshTokenAlreadyRevoked = new(
-        "IDN-DOM-006",
-        ErrorLayer.Domain,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        409,
-        "Se intento revocar un refresh token ya revocado",
-        "La sesion ya habia sido revocada.");
-
-    public static readonly ErrorDefinition UserEmailAlreadyRegistered = new(
-        "IDN-APP-001",
-        ErrorLayer.Application,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        409,
-        "Intento de registro con un correo ya existente",
-        "Ya existe un usuario registrado con ese correo.");
-
-    public static readonly ErrorDefinition InvalidCredentials = new(
-        "IDN-APP-002",
-        ErrorLayer.Application,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        401,
-        "Intento de login con credenciales invalidas",
-        "Credenciales invalidas.");
-
-    public static readonly ErrorDefinition UserInactive = new(
-        "IDN-APP-003",
-        ErrorLayer.Application,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        401,
-        "Intento de acceso de un usuario inactivo",
-        "El usuario esta inactivo.");
-
-    public static readonly ErrorDefinition InvalidRefreshToken = new(
-        "IDN-APP-004",
-        ErrorLayer.Application,
-        ErrorSeverity.Warning,
-        ErrorExposure.Response,
-        401,
-        "Refresh token inexistente, expirado o revocado",
-        "El refresh token es invalido o expiro.");
-
-    public static readonly ErrorDefinition UserNotFound = new(
-        "IDN-APP-005",
+    public static readonly ErrorDefinition PersonNotFound = new(
+        "IDN-APP-006",
         ErrorLayer.Application,
         ErrorSeverity.Warning,
         ErrorExposure.Response,
         404,
-        "El usuario solicitado no existe",
-        "Usuario no encontrado.");
+        "La persona solicitada no existe",
+        "Persona no encontrada.");
 
     public static readonly ErrorDefinition UseCaseFailure = new(
         "IDN-APP-999",
@@ -149,14 +62,6 @@ public static class ErrorCatalog
         ErrorExposure.LogOnly,
         500,
         "Fallo la aplicacion de migraciones en el arranque");
-
-    public static readonly ErrorDefinition TokenSigningFailed = new(
-        "IDN-INF-005",
-        ErrorLayer.Infrastructure,
-        ErrorSeverity.Critical,
-        ErrorExposure.LogOnly,
-        500,
-        "No se pudo firmar el access token: revisa la configuracion Jwt");
 
     public static readonly ErrorDefinition RequestValidationFailed = new(
         "IDN-API-001",

@@ -1,45 +1,60 @@
 using System.ComponentModel.DataAnnotations;
-using Identity.Application.Commands.AuthenticateUser;
-using Identity.Application.Commands.RefreshSession;
-using Identity.Application.Commands.RegisterUser;
+using Identity.Application.Commands.CreatePerson;
+using Identity.Application.Commands.UpdatePerson;
 
 namespace Identity.Api.Contracts;
 
-public sealed record RegisterRequest
+public sealed record CreatePersonRequest
 {
+    //data anotations
     [Required]
-    [EmailAddress]
     [MaxLength(160)]
-    public string Email { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     [Required]
-    [MinLength(8)]
-    [MaxLength(100)]
-    public string Password { get; init; } = string.Empty;
+    [MaxLength(10)]
+    public string Gender { get; init; } = string.Empty;
 
     [Required]
-    [MaxLength(120)]
-    public string FullName { get; init; } = string.Empty;
+    [MaxLength(5)]
+    public string Age { get; init; } = string.Empty;
 
-    public RegisterUserCommand ToCommand() => new(Email, Password, FullName);
+    [Required]
+    [MaxLength(20)]
+    public string Identification { get; init; } = string.Empty;
+
+    [Required]
+    public string Address { get; init; } = string.Empty;
+
+    [Required]
+    public string Phone { get; init; } = string.Empty;
+
+    public CreatePersonCommand ToCommand() => new(Name, Gender, Age, Identification, Address, Phone);
 }
 
-public sealed record LoginRequest
+public sealed record UpdatePersonRequest
 {
     [Required]
-    [EmailAddress]
-    public string Email { get; init; } = string.Empty;
+    [MaxLength(160)]
+    public string Name { get; init; } = string.Empty;
 
     [Required]
-    public string Password { get; init; } = string.Empty;
+    [MaxLength(10)]
+    public string Gender { get; init; } = string.Empty;
 
-    public AuthenticateUserCommand ToCommand() => new(Email, Password);
-}
-
-public sealed record RefreshRequest
-{
     [Required]
-    public string RefreshToken { get; init; } = string.Empty;
+    [MaxLength(5)]
+    public string Age { get; init; } = string.Empty;
 
-    public RefreshSessionCommand ToCommand() => new(RefreshToken);
+    [Required]
+    [MaxLength(20)]
+    public string Identification { get; init; } = string.Empty;
+
+    [Required]
+    public string Address { get; init; } = string.Empty;
+
+    [Required]
+    public string Phone { get; init; } = string.Empty;
+
+    public UpdatePersonCommand ToCommand(Guid id) => new(id, Name, Gender, Age, Identification, Address, Phone);
 }
