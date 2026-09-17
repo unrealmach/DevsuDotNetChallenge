@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
+        // registro explicito en services
         services.AddScoped<IClientValidationService, ClientValidationService>();
         services.AddScoped<IClientWriteService, ClientWriteService>();
         services.AddScoped<IClientReadService, ClientReadService>();

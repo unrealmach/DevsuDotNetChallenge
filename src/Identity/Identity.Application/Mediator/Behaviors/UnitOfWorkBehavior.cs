@@ -12,7 +12,7 @@ internal sealed class UnitOfWorkBehavior<TRequest, TResponse>(IUnitOfWork unitOf
         typeof(ICommand).IsAssignableFrom(typeof(TRequest))
         || Array.Exists(
             typeof(TRequest).GetInterfaces(),
-            contract => contract.IsGenericType && contract.GetGenericTypeDefinition() == typeof(ICommand<>));
+            contract => contract.IsGenericType && contract.GetGenericTypeDefinition() == typeof(ICommand<>)); // match contra la interfaz command
 
     public async Task<TResponse> HandleAsync(
         TRequest request,
