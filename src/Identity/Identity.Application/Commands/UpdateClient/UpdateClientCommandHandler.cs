@@ -27,6 +27,8 @@ internal sealed class UpdateClientCommandHandler(IClientWriteService clients)
         client.WithStatus(command.Status);
         client.Touch();
 
+        await clients.PublishUpsertedAsync(client, ct);
+
         return Result.Success(client.ToDto());
     }
 }

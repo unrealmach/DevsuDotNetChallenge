@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Shared.Messaging;
 
 namespace Account.Infrastructure;
 
@@ -32,6 +33,8 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<ClientUpsertedIntegrationEventConsumer>();
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitMq = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;

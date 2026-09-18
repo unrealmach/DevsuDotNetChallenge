@@ -3,6 +3,7 @@ using Identity.Application.Ports.Output.Write;
 using Identity.Domain.Entities;
 using Identity.Domain.Errors;
 using Identity.Infrastructure.Exceptions;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Infrastructure.Adapters.Persistence;
@@ -48,6 +49,13 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     {
         modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+
+        // Outbox transaccional de MassTransit: el evento de integracion se guarda
+        // en la misma transaccion que la entidad, no se pierde ni se publica de mas.
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         base.OnModelCreating(modelBuilder);
     }
 

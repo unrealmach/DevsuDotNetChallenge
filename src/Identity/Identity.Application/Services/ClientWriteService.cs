@@ -1,10 +1,14 @@
+using Identity.Application.Ports.Output.Messaging;
 using Identity.Application.Ports.Output.Security;
 using Identity.Application.Ports.Output.Write;
 using Identity.Domain.Entities;
 
 namespace Identity.Application.Services;
 
-internal sealed class ClientWriteService(IClientWriteRepository clients, ICredentialEncryptor credentialEncryptor)
+internal sealed class ClientWriteService(
+    IClientWriteRepository clients,
+    ICredentialEncryptor credentialEncryptor,
+    IIntegrationEventPublisher publisher)
     : IClientWriteService
 {
     public async Task<Client> CreateAsync(
@@ -41,4 +45,7 @@ internal sealed class ClientWriteService(IClientWriteRepository clients, ICreden
     public string EncryptPassword(string password) => credentialEncryptor.Encrypt(password);
 
     public void Remove(Client client) => clients.Remove(client);
+
+    public Task PublishUpsertedAsync(Client client, CancellationToken ct = default) =>
+        publisher.PublishAsync(client.ToUpsertedIntegrationEvent(), ct);
 }

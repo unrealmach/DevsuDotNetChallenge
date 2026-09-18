@@ -4,12 +4,15 @@ WORKDIR /src
 
 # Los csproj primero: asi el restore se cachea mientras no cambien las dependencias.
 COPY Directory.Build.props ./
+COPY src/Shared/Contracts/Contracts.csproj                           src/Shared/Contracts/
+COPY src/Shared/Messaging/Messaging.csproj                           src/Shared/Messaging/
 COPY src/Account/Account.Domain/Account.Domain.csproj             src/Account/Account.Domain/
 COPY src/Account/Account.Application/Account.Application.csproj   src/Account/Account.Application/
 COPY src/Account/Account.Infrastructure/Account.Infrastructure.csproj src/Account/Account.Infrastructure/
 COPY src/Account/Account.Api/Account.Api.csproj                   src/Account/Account.Api/
 RUN dotnet restore src/Account/Account.Api/Account.Api.csproj
 
+COPY src/Shared/ src/Shared/
 COPY src/Account/ src/Account/
 RUN dotnet publish src/Account/Account.Api/Account.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 

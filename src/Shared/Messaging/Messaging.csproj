@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>Shared.Messaging</RootNamespace>
+        <AssemblyName>Shared.Messaging</AssemblyName>
+    </PropertyGroup>
+
+</Project>

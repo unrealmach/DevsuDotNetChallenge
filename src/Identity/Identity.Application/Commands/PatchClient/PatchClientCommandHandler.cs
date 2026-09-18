@@ -29,6 +29,8 @@ internal sealed class PatchClientCommandHandler(IClientWriteService clients)
 
         client.Touch();
 
+        await clients.PublishUpsertedAsync(client, ct);
+
         return Result.Success(client.ToDto());
     }
 }

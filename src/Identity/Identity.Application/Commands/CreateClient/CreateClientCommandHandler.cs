@@ -28,6 +28,8 @@ internal sealed class CreateClientCommandHandler(IClientValidationService valida
             command.Status,
             ct);
 
+        await clients.PublishUpsertedAsync(client, ct);
+
         return Result.Success(client.ToDto());
     }
 }

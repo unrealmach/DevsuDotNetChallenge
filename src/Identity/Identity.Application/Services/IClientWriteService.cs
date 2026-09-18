@@ -21,4 +21,6 @@ internal interface IClientWriteService
     string EncryptPassword(string password);
 
     void Remove(Client client);
+
+    Task PublishUpsertedAsync(Client client, CancellationToken ct = default);
 }

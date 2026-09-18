@@ -1,3 +1,4 @@
+using Identity.Application.Ports.Output.Messaging;
 using Identity.Application.Ports.Output.Read;
 using Identity.Application.Ports.Output.Security;
 using Identity.Application.Ports.Output.Write;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Shared.Messaging;
 
 namespace Identity.Infrastructure;
 
@@ -44,6 +46,12 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
+            x.AddEntityFrameworkOutbox<IdentityDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.UseBusOutbox();
+            });
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitMq = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
@@ -57,6 +65,8 @@ public static class DependencyInjection
                 cfg.ConfigureEndpoints(context);
             });
         });
+
+        services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisherAdapter>();
 
         return services;
     }

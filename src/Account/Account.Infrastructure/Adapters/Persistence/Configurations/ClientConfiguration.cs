@@ -12,7 +12,6 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
 
         builder.Property(u => u.ClientId).HasMaxLength(160).IsRequired();
         builder.Property(u => u.Status).HasMaxLength(160).IsRequired();
-        builder.Property(u => u.Password).HasMaxLength(160).IsRequired();
 
         builder.HasIndex(u => u.ClientId).IsUnique();
     }

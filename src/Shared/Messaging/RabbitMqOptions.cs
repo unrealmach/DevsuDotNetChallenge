@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Account.Infrastructure.Adapters.Messaging;
+namespace Shared.Messaging;
 
 public sealed class RabbitMqOptions
 {

@@ -9,6 +9,11 @@ public class Person : AuditableEntity
         Id = Guid.NewGuid();
     }
 
+    protected Person(Guid id)
+    {
+        Id = id;
+    }
+
     public Guid Id { get; private set; }
     public string Name { get; private set; } = null!;
     public string Gender { get; private set; } = null!;
@@ -18,6 +23,10 @@ public class Person : AuditableEntity
     public string Phone { get; private set; } = null!;
 
     public static Person Create() => new();
+
+    // Para replicar una entidad que ya existe en otro microservicio (via evento de
+    // integracion) y necesita conservar el mismo Id, no uno nuevo.
+    public static Person CreateWithId(Guid id) => new(id);
 
     public Person WithName(string name)
     {
