@@ -1,8 +1,10 @@
 using System.Data.Common;
 using Account.Application.Ports.Output.Write;
+using Account.Domain.Entities;
 using Account.Domain.Errors;
 using Account.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using AccountEntity = Account.Domain.Entities.Account;
 
 namespace Account.Infrastructure.Adapters.Persistence;
 
@@ -11,7 +13,15 @@ public sealed class AccountDbContext(DbContextOptions<AccountDbContext> options)
 {
     public const string Schema = "account";
 
-    // DbSet<TuEntidad> van aca cuando agregues el primer caso de uso.
+    public DbSet<Person> Persons => Set<Person>();
+
+    public DbSet<Client> Clients => Set<Client>();
+
+    public DbSet<AccountEntity> Accounts => Set<AccountEntity>();
+
+    public DbSet<History> Histories => Set<History>();
+
+    public DbSet<Balance> Balances => Set<Balance>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
