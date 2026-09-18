@@ -45,6 +45,15 @@ public static class DependencyInjection
                     host.Password(rabbitMq.Password);
                 });
 
+                // Sin esto, un fallo en el consumer va directo a la cola _error
+                // en el primer intento. Con backoff exponencial le damos margen
+                // a fallas transitorias (ej. Postgres reiniciando) antes de darlo por perdido.
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromSeconds(1),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(2)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

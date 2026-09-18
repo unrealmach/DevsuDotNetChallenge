@@ -46,6 +46,9 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
+            // add inboxstate
+            //add outboxstate
+            //add outboxMessage
             x.AddEntityFrameworkOutbox<IdentityDbContext>(o =>
             {
                 o.UsePostgres();
