@@ -1,20 +1,20 @@
 name: devsu-challenge
 services:
-  identity-db:
+  shared-db:
     image: postgres:16-alpine
-    container_name: devsu-identity-db
+    container_name: devsu-shared-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${IDENTITY_DB_NAME:-identity}
-      POSTGRES_USER: ${IDENTITY_DB_USER:-devsu}
-      POSTGRES_PASSWORD: ${IDENTITY_DB_PASSWORD:-devsu}
+      POSTGRES_DB: ${SHARED_DB_NAME:-devsu}
+      POSTGRES_USER: ${SHARED_DB_USER:-devsu}
+      POSTGRES_PASSWORD: ${SHARED_DB_PASSWORD:-devsu}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${IDENTITY_DB_PORT:-5433}:5432"
+      - "${SHARED_DB_PORT:-5433}:5432"
     volumes:
-      - identity-db-data:/var/lib/postgresql/data
+      - shared-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${IDENTITY_DB_USER:-devsu} -d ${IDENTITY_DB_NAME:-identity}"]
+      test: ["CMD-SHELL", "pg_isready -U ${SHARED_DB_USER:-devsu} -d ${SHARED_DB_NAME:-devsu}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
     container_name: devsu-identity-api
     restart: unless-stopped
     depends_on:
-      identity-db:
+      shared-db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -37,21 +37,48 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_HTTP_PORTS: 8080
       RunMigrationsOnStartup: "true"
-      ConnectionStrings__Identity: "Host=identity-db;Port=5432;Database=${IDENTITY_DB_NAME:-identity};Username=${IDENTITY_DB_USER:-devsu};Password=${IDENTITY_DB_PASSWORD:-devsu}"
+      ConnectionStrings__Identity: "Host=shared-db;Port=5432;Database=${SHARED_DB_NAME:-devsu};Username=${SHARED_DB_USER:-devsu};Password=${SHARED_DB_PASSWORD:-devsu}"
       RabbitMq__Host: rabbitmq
       RabbitMq__VirtualHost: /
       RabbitMq__Username: ${RABBITMQ_USER:-devsu}
       RabbitMq__Password: ${RABBITMQ_PASSWORD:-devsu}
       OpenTelemetry__OtlpEndpoint: "http://aspire-dashboard:18889"
-      Jwt__Issuer: devsu-identity
-      Jwt__Audience: devsu-clients
-      Jwt__Key: ${JWT_KEY:-CAMBIA-ESTA-CLAVE-EN-PRODUCCION-MINIMO-32-CHARS}
-      Jwt__AccessTokenMinutes: "30"
-      Jwt__RefreshTokenDays: "7"
     ports:
       - "${IDENTITY_API_PORT:-8081}:8080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  account-api:
+    build:
+      context: .
+      dockerfile: src/Account/Account.Api/Dockerfile
+    container_name: devsu-account-api
+    restart: unless-stopped
+    depends_on:
+      shared-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_HTTP_PORTS: 8080
+      RunMigrationsOnStartup: "true"
+      ConnectionStrings__Account: "Host=shared-db;Port=5432;Database=${SHARED_DB_NAME:-devsu};Username=${SHARED_DB_USER:-devsu};Password=${SHARED_DB_PASSWORD:-devsu}"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__VirtualHost: /
+      RabbitMq__Username: ${RABBITMQ_USER:-devsu}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-devsu}
+      OpenTelemetry__OtlpEndpoint: "http://aspire-dashboard:18889"
+    ports:
+      - "${ACCOUNT_API_PORT:-8082}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -103,52 +130,7 @@ services:
       - "${ASPIRE_DASHBOARD_PORT:-18888}:18888"
       - "${ASPIRE_DASHBOARD_OTLP_PORT:-18889}:18889"
 
-  # ---------------------------------------------------------------------------
-  # SEGUNDO MICROSERVICIO (Accounts) 
-  # ---------------------------------------------------------------------------
-  # accounts-db:
-  #   image: postgres:16-alpine
-  #   container_name: devsu-accounts-db
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: ${ACCOUNTS_DB_NAME:-accounts}
-  #     POSTGRES_USER: ${ACCOUNTS_DB_USER:-devsu}
-  #     POSTGRES_PASSWORD: ${ACCOUNTS_DB_PASSWORD:-devsu}
-  #     PGDATA: /var/lib/postgresql/data/pgdata
-  #   ports:
-  #     - "${ACCOUNTS_DB_PORT:-5434}:5432"
-  #   volumes:
-  #     - accounts-db-data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ${ACCOUNTS_DB_USER:-devsu} -d ${ACCOUNTS_DB_NAME:-accounts}"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 10s
-  #
-  # accounts-api:
-  #   build:
-  #     context: .
-  #     dockerfile: src/Accounts/Accounts.Api/Dockerfile
-  #   container_name: devsu-accounts-api
-  #   restart: unless-stopped
-  #   depends_on:
-  #     accounts-db:
-  #       condition: service_healthy
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-  #     ASPNETCORE_HTTP_PORTS: 8080
-  #     RunMigrationsOnStartup: "true"
-  #     ConnectionStrings__Accounts: "Host=accounts-db;Port=5432;Database=${ACCOUNTS_DB_NAME:-accounts};Username=${ACCOUNTS_DB_USER:-devsu};Password=${ACCOUNTS_DB_PASSWORD:-devsu}"
-  #     # Mismos valores que Identity: asi Accounts puede validar los JWT que emite Identity.
-  #     Jwt__Issuer: devsu-identity
-  #     Jwt__Audience: devsu-clients
-  #     Jwt__Key: ${JWT_KEY:-CAMBIA-ESTA-CLAVE-EN-PRODUCCION-MINIMO-32-CHARS}
-  #   ports:
-  #     - "${ACCOUNTS_API_PORT:-8082}:8080"
-
 volumes:
-  identity-db-data:
+  shared-db-data:
   redis-data:
   rabbitmq-data:
-  # accounts-db-data:

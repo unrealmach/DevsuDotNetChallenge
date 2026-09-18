@@ -40,9 +40,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Devsu Identity API",
+        Title = " Identity API",
         Version = "v1",
-        Description = "Microservicio de gestion de personas (arquitectura hexagonal)."
+        Description = "Microservicio Identity."
     });
 });
 

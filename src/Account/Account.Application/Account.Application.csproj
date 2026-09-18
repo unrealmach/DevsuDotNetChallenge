@@ -1,14 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Account.Application</RootNamespace>
+        <AssemblyName>Account.Application</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.23"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Account.Infrastructure" />
+        <InternalsVisibleTo Include="Account.ArchitectureTests" />
+        <InternalsVisibleTo Include="Account.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Account.Domain\Account.Domain.csproj" />
+    </ItemGroup>
 </Project>
