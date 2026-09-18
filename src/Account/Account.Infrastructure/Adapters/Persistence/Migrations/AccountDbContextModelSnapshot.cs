@@ -90,6 +90,9 @@ namespace Account.Infrastructure.Adapters.Persistence.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AvailableBalance")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 

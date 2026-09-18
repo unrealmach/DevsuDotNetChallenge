@@ -6,6 +6,50 @@ public static class ErrorCatalog
 {
     public const string GenericResponseMessage = "Ocurrio un error procesando la solicitud. Contacta a soporte con el traceId.";
 
+    public static readonly ErrorDefinition InsufficientBalance = new(
+        "ACC-DOM-001",
+        ErrorLayer.Domain,
+        ErrorSeverity.Information,
+        ErrorExposure.Response,
+        422,
+        "El movimiento dejaria el saldo de la cuenta en negativo",
+        "Saldo no disponible.");
+
+    public static readonly ErrorDefinition AccountNotFound = new(
+        "ACC-APP-001",
+        ErrorLayer.Application,
+        ErrorSeverity.Warning,
+        ErrorExposure.Response,
+        404,
+        "La cuenta solicitada no existe",
+        "Cuenta no encontrada.");
+
+    public static readonly ErrorDefinition ClientNotFound = new(
+        "ACC-APP-002",
+        ErrorLayer.Application,
+        ErrorSeverity.Warning,
+        ErrorExposure.Response,
+        404,
+        "El cliente solicitado no existe en la replica local de Account",
+        "Cliente no encontrado.");
+
+    public static readonly ErrorDefinition AccountLocked = new(
+        "ACC-APP-003",
+        ErrorLayer.Application,
+        ErrorSeverity.Warning,
+        ErrorExposure.Response,
+        423,
+        "No se pudo adquirir el lock distribuido de la cuenta: hay otra operacion en curso sobre la misma cuenta",
+        "La cuenta esta siendo procesada por otra operacion. Intenta de nuevo en unos segundos.");
+
+    public static readonly ErrorDefinition AccountWithoutBalance = new(
+        "ACC-APP-004",
+        ErrorLayer.Application,
+        ErrorSeverity.Critical,
+        ErrorExposure.LogOnly,
+        500,
+        "La cuenta no tiene una fila de Balance asociada: inconsistencia de datos, toda cuenta deberia crear su balance en 0");
+
     public static readonly ErrorDefinition UseCaseFailure = new(
         "ACC-APP-999",
         ErrorLayer.Application,

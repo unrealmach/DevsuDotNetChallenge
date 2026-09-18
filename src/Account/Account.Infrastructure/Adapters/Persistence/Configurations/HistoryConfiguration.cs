@@ -17,6 +17,7 @@ public class HistoryConfiguration : IEntityTypeConfiguration<History>
         builder.Property(h => h.Date).IsRequired();
         builder.Property(h => h.Value).IsRequired();
         builder.Property(h => h.Type).HasMaxLength(20).IsRequired();
+        builder.Property(h => h.AvailableBalance).IsRequired();
 
         builder.HasIndex(h => h.ClientId);
         builder.HasIndex(h => h.AccountId);

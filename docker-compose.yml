@@ -63,6 +63,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       aspire-dashboard:
         condition: service_started
     environment:
@@ -74,6 +76,7 @@ services:
       RabbitMq__VirtualHost: /
       RabbitMq__Username: ${RABBITMQ_USER:-devsu}
       RabbitMq__Password: ${RABBITMQ_PASSWORD:-devsu}
+      Redis__ConnectionString: "redis:6379"
       OpenTelemetry__OtlpEndpoint: "http://aspire-dashboard:18889"
     ports:
       - "${ACCOUNT_API_PORT:-8082}:8080"

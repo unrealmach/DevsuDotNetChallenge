@@ -1,12 +1,18 @@
+using Account.Application.Ports.Output.Locking;
+using Account.Application.Ports.Output.Read;
 using Account.Application.Ports.Output.Write;
+using Account.Infrastructure.Adapters.Locking;
 using Account.Infrastructure.Adapters.Messaging;
 using Account.Infrastructure.Adapters.Persistence;
+using Account.Infrastructure.Adapters.Persistence.Read;
+using Account.Infrastructure.Adapters.Persistence.Write;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Shared.Messaging;
+using StackExchange.Redis;
 
 namespace Account.Infrastructure;
 
@@ -24,7 +30,27 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AccountDbContext>());
 
-        // Repositorios de Read/Write van aca cuando agregues el primer caso de uso.
+        // repositorios de lectura
+        services.AddScoped<IAccountReadRepository, AccountReadRepositoryAdapter>();
+        services.AddScoped<IClientReadRepository, ClientReadRepositoryAdapter>();
+        services.AddScoped<IMovementReadRepository, MovementReadRepositoryAdapter>();
+
+        // repositorios de escritura
+        services.AddScoped<IAccountWriteRepository, AccountWriteRepositoryAdapter>();
+        services.AddScoped<IBalanceRepository, BalanceRepositoryAdapter>();
+        services.AddScoped<IHistoryWriteRepository, HistoryWriteRepositoryAdapter>();
+
+        services.AddOptions<RedisOptions>()
+            .Bind(configuration.GetSection(RedisOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var redis = sp.GetRequiredService<IOptions<RedisOptions>>().Value;
+            return ConnectionMultiplexer.Connect(redis.ConnectionString);
+        });
+        services.AddScoped<IDistributedLock, RedisDistributedLock>();
 
         services.AddOptions<RabbitMqOptions>()
             .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
